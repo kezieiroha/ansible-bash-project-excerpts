@@ -1,0 +1,46 @@
+# .ansible-lint.yml
+# Kezie Iroha - DevSecOps hardened baseline with noise suppression
+# Docs: https://ansible-lint.readthedocs.io/configuration/
+
+# --------------
+# MAIN SETTINGS
+# --------------
+# This file is used to configure ansible-lint for the project.
+warn_list:
+  - command-instead-of-module # Prefer idempotent modules to `command`
+  - risky-shell-pipe # Prevent curl|bash or similar anti-patterns
+  - unsafe-package-install # Avoid `state: latest` or blind upgrades
+  - deprecated-builtin # Avoid deprecated module names
+  - fqcn-builtins # Enforce ansible.builtin namespace usage
+  - meta-no-info # Warn if roles lack metadata
+  - package-latest # Catch `state: latest` on apt/yum installs
+  - name[missing] # Tasks should be named, but non-critical
+  - name[template] # Allows templates in task names
+  - fqcn # Includes fqcn[action-core]
+
+# -------------------
+# DEMOTED OR SKIPPED
+# -------------------
+# These rules are demoted or skipped to reduce noise in the output.
+# They are not critical and can be ignored in certain contexts.
+# Demoted rules are still checked but with a lower severity level.
+skip_list:
+  - ignore-errors # Use `failed_when: false` instead, but not critical
+  - no-free-form # Common when using win_ modules like win_find
+  - yaml[trailing-spaces] # Style-only, not a functional error
+  - yaml[truthy] # Accept `yes/no` or `True/False` if consistent
+  - meta-no-tags # Roles without tags — optional in non-published roles
+  - yaml[new-line-at-end-of-file] # Cosmetic check
+
+# ------------------------------------------------------------------------------
+# Additional settings
+# ------------------------------------------------------------------------------
+offline: true # Avoid network access for linting
+verbosity: 1
+parseable: true
+exclude_paths:
+  - docs/
+  - tests/
+  - .github/workflows/
+  - ansible-projects/ans-ems-oracle-win-cli/tower-win-cli-deploy.yml
+  - ansible-projects/ans-ems-oracle-win-cli/tower-win-cli-deploy.yml.j2

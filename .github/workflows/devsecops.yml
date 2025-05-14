@@ -1,0 +1,86 @@
+# Kezie Iroha 05-2025
+# DevSecOps CI/CD for Bash + Ansible projects with security scanning and SARIF reporting
+# Uses maintained GitHub Marketplace actions:
+# Ansible Lint: https://github.com/marketplace/actions/run-ansible-lint
+# ShellCheck:   https://github.com/marketplace/actions/shellcheck
+# Gitleaks:     https://github.com/marketplace/actions/gitleaks
+# Snyk IaC:     https://github.com/snyk/actions
+
+name: Bash|Ansible|Snyk DevSecOps CI
+
+on:
+  push:
+  pull_request:
+  #schedule:
+  #  - cron: '0 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write  # SARIF uploads to GitHub Security tab
+
+jobs:
+  devsecops:
+    name: Static Analysis (Bash + Ansible)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Ensure reports directory exists
+        run: mkdir -p reports
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        env:
+          SHELLCHECK_OPTS: -e SC2144 -e SC2045 -e SC1017  # Ignore known noisy rules
+        with:
+          severity: error
+
+      - name: Run Ansible Lint
+        uses: ansible/ansible-lint@main
+        with:
+          setup_python: true
+          args: "--offline"
+          working_directory: ansible-projects/
+        continue-on-error: true
+
+      - name: Run YAML Lint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          config_file: .yamllint.yml
+          file_or_dir: .
+        continue-on-error: true
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          config: .gitleaks.toml
+          sarif: true
+          sarif_file: reports/gitleaks.sarif
+          sarif_upload: true
+
+  snyk:
+    name: Snyk IaC Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Ensure reports directory exists
+        run: mkdir -p reports
+
+      - name: Run Snyk to check Terraform and Ansible folders
+        continue-on-error: true
+        uses: snyk/actions/iac@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          file: |
+            ansible-projects/
+          args: --severity-threshold=high
+          sarif: true
+
+      - name: Upload Snyk results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/snyk.sarif
