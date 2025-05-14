@@ -70,7 +70,7 @@ jobs:
         run: mkdir -p reports
 
       - name: Run Snyk IaC Scan
-        continue-on-error: true
+        continue-on-error: false
         uses: snyk/actions/iac@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
