@@ -69,14 +69,15 @@ jobs:
       - name: Ensure reports directory exists
         run: mkdir -p reports
 
-      - name: Run Snyk to check Terraform and Ansible folders
+      - name: Run Snyk IaC Scan
         continue-on-error: true
         uses: snyk/actions/iac@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          file: .
-          args: --severity-threshold=high
+          file: |
+            ansible-projects/
+          args: --severity-threshold=high --report --scan=ansible
           sarif: true
 
       - name: Upload Snyk results
