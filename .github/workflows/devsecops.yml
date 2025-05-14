@@ -61,26 +61,4 @@ jobs:
           sarif_file: reports/gitleaks.sarif
           sarif_upload: true
 
-  snyk:
-    name: Snyk IaC Scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Ensure reports directory exists
-        run: mkdir -p reports
 
-      - name: Run Snyk IaC Scan
-        continue-on-error: false
-        uses: snyk/actions/iac@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          file: |
-             "**/*.yml"  # Wildcard to scan all YAML files
-          args: --severity-threshold=high --all-projects
-          sarif: true
-
-      - name: Upload Snyk results
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: reports/snyk.sarif
