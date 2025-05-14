@@ -75,8 +75,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          file: |
-            ansible-projects/
+          file: .
           args: --severity-threshold=high
           sarif: true
 
