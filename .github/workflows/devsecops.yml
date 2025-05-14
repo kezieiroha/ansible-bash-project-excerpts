@@ -76,8 +76,8 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           file: |
-            ansible-projects/ans-ems-oracle-win-cli/
-          args: --severity-threshold=high --report --scan=ansible
+             "**/*.yml"  # Wildcard to scan all YAML files
+          args: --severity-threshold=high --all-projects
           sarif: true
 
       - name: Upload Snyk results
